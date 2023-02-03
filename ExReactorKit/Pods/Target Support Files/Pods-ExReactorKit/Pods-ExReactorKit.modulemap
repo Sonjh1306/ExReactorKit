@@ -1,0 +1,6 @@
+framework module Pods_ExReactorKit {
+  umbrella header "Pods-ExReactorKit-umbrella.h"
+
+  export *
+  module * { export * }
+}
