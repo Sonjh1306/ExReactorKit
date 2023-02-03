@@ -141,35 +141,29 @@ final class ViewController: UIViewController, View {
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
-        reactor.state.map(\.displayIcon)
+        reactor.state.map(\.isLoading)
             .distinctUntilChanged()
-            .subscribe{ [weak self] (image) in
-                guard let url = image else { return }
-                let imageUrl = URL(string: url)
-                self?.iconImageView.kf.setImage(with: imageUrl)
+            .bind(to: self.activityIndicator.rx.isAnimating)
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.fetchJokeData)
+            .subscribe{ [weak self] (joke) in
+                switch joke {
+                case .next(.success(let joke)):
+                    self?.configureJokeData(joke: joke)
+                case .next(.failure(let error)):
+                    switch error {
+                    case .decodingError:
+                        print("Decoding Error")
+                    case .networkError:
+                        print("Network Error")
+                    case .urlError:
+                        print("URL Error")
+                    }
+                default:
+                    print("Unknown")
+                }
             }.disposed(by: disposeBag)
-        
-        reactor.state.map(\.displayId)
-            .distinctUntilChanged()
-            .bind(to: self.idLabel.rx.text)
-            .disposed(by: disposeBag)
-        
-        reactor.state.map(\.displayUpdateAt)
-            .distinctUntilChanged()
-            .bind(to: self.updateAtLabel.rx.text)
-            .disposed(by: disposeBag)
-        
-        reactor.state.map(\.displayUrl)
-            .distinctUntilChanged()
-            .bind(to: self.urlLabel.rx.text)
-            .disposed(by: disposeBag)
-        
-        reactor.state.map(\.displayValue)
-            .distinctUntilChanged()
-            .bind(to: self.valueLabel.rx.text)
-            .disposed(by: disposeBag)
-        
-
     }
     
     private func configureJokeData(joke: Joke) {
